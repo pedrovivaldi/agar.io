@@ -6,6 +6,7 @@
 package server;
 
 import java.awt.Color;
+import java.awt.geom.Ellipse2D;
 import java.io.Serializable;
 
 /**
@@ -69,5 +70,10 @@ public class Ball implements Serializable {
     public void move(int dx, int dy) {
         this.x += dx;
         this.y += dy;
+    }
+    
+    public Ellipse2D toEllipse2D() {
+        Ellipse2D elipse = new Ellipse2D.Double(x, y, radius, radius);
+        return elipse;
     }
 }

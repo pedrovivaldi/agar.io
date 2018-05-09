@@ -187,16 +187,16 @@ public class ClientForm extends javax.swing.JFrame {
         int dy = 0;
         switch (code) {
             case KeyEvent.VK_UP:
-                dy = -10;
+                dy = -2;
                 break;
             case KeyEvent.VK_DOWN:
-                dy = 10;
+                dy = 2;
                 break;
             case KeyEvent.VK_LEFT:
-                dx = -10;
+                dx = -2;
                 break;
             case KeyEvent.VK_RIGHT:
-                dx = 10;
+                dx = 2;
                 break;
         }
 
@@ -209,12 +209,24 @@ public class ClientForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_formKeyPressed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void disconnect() {
         try {
+            Message logoffMessage = new Message(null, null, MessageType.LOGOFF);
+            saida.writeObject(logoffMessage);
+            saida.reset();
+
+            balls.clear();
+            paint();
+
+            receptor.interrupt();
             socket.close();
         } catch (IOException ex) {
             Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        disconnect();
         jButton1.setEnabled(true);
         jButton2.setEnabled(false);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -235,11 +247,11 @@ public class ClientForm extends javax.swing.JFrame {
             saida.reset();
 
             Message newMessage = (Message) entrada.readObject();
-            if (newMessage.getType().equals(MessageType.LOGIN_CONFIRMED)) {
-                g.setColor(Color.white);
-                g.fillRect(0, 0, 1000, 1000);
+            if (newMessage.getType().equals(MessageType.CHANGED)) {
                 receptor = new Receptor();
                 receptor.start();
+                this.balls = (List<Ball>) newMessage.getContent();
+                paint();
                 jButton1.setEnabled(false);
                 jButton2.setEnabled(true);
             } else {
@@ -254,11 +266,7 @@ public class ClientForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        try {
-            socket.close();
-        } catch (IOException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        disconnect();
     }//GEN-LAST:event_formWindowClosed
 
     private void jPanel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel2MouseClicked
@@ -286,10 +294,23 @@ public class ClientForm extends javax.swing.JFrame {
             Message newMessage;
             for (;;) {
                 try {
-                    newMessage = (Message) entrada.readObject();
-                    System.out.println(newMessage);
-                    balls = (List<Ball>) newMessage.getContent();
-                    paint();
+                    if (socket.isConnected()) {
+                        newMessage = (Message) entrada.readObject();
+                        if (newMessage != null && newMessage.getType() != null) {
+                            if (newMessage.getType().equals(MessageType.CHANGED)) {
+                                balls = (List<Ball>) newMessage.getContent();
+                                paint();
+                            } else if (newMessage.getType().equals(MessageType.LOSE)) {
+                                balls.clear();
+                                paint();
+
+                                this.interrupt();
+                                socket.close();
+                                jButton1.setEnabled(true);
+                                jButton2.setEnabled(false);
+                            }
+                        }
+                    }
                 } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }

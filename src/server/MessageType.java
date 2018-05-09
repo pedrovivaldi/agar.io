@@ -11,5 +11,5 @@ package server;
  * @author Pedro Vivaldi
  */
 public enum MessageType {
-    LOGIN_REQUEST, LOGIN_CONFIRMED, MOVE_REQUEST, MOVED, ERROR;
+    LOGIN_REQUEST, LOGIN_CONFIRMED, MOVE_REQUEST, CHANGED, LOGOFF, LOSE, ERROR;
 }
