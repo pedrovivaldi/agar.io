@@ -200,12 +200,14 @@ public class ClientForm extends javax.swing.JFrame {
                 break;
         }
 
-        Message newMessage = new Message(dx, dy, MessageType.MOVE_REQUEST);
-        try {
-            saida.writeObject(newMessage);
-            saida.reset();
-        } catch (IOException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
+        if (socket.isConnected() && !socket.isClosed()) {
+            Message newMessage = new Message(dx, dy, MessageType.MOVE_REQUEST);
+            try {
+                saida.writeObject(newMessage);
+                saida.reset();
+            } catch (IOException ex) {
+                Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_formKeyPressed
 
@@ -216,7 +218,7 @@ public class ClientForm extends javax.swing.JFrame {
             saida.reset();
 
             balls.clear();
-            paint();
+            paintComponent();
 
             receptor.interrupt();
             socket.close();
@@ -251,7 +253,7 @@ public class ClientForm extends javax.swing.JFrame {
                 receptor = new Receptor();
                 receptor.start();
                 this.balls = (List<Ball>) newMessage.getContent();
-                paint();
+                paintComponent();
                 jButton1.setEnabled(false);
                 jButton2.setEnabled(true);
             } else {
@@ -277,7 +279,7 @@ public class ClientForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jPanel2MouseClicked
 
-    private void paint() {
+    private void paintComponent() {
         g.setColor(Color.white);
         g.fillRect(0, 0, 1000, 1000);
         for (Ball ball : balls) {
@@ -294,15 +296,15 @@ public class ClientForm extends javax.swing.JFrame {
             Message newMessage;
             for (;;) {
                 try {
-                    if (socket.isConnected()) {
+                    if (socket.isConnected() && !socket.isClosed() && !this.isInterrupted()) {
                         newMessage = (Message) entrada.readObject();
                         if (newMessage != null && newMessage.getType() != null) {
                             if (newMessage.getType().equals(MessageType.CHANGED)) {
                                 balls = (List<Ball>) newMessage.getContent();
-                                paint();
+                                paintComponent();
                             } else if (newMessage.getType().equals(MessageType.LOSE)) {
                                 balls.clear();
-                                paint();
+                                paintComponent();
 
                                 this.interrupt();
                                 socket.close();

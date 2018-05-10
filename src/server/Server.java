@@ -14,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +29,7 @@ public class Server extends Thread {
     private Ball food;
 
     public Server(int port) {
-        clients = new ArrayList<>();
+        clients = new CopyOnWriteArrayList<>();
         food = new Ball(100, 100, 5);
         food.setColor(Color.RED);
         food.setName("");
@@ -148,7 +149,6 @@ public class Server extends Thread {
                             }
 
                             client.removeClient();
-                            // Enviar msg e Retirar player que perdeu 
                         }
                     } else if (ball.getRadius() < client.ball.getRadius()) {
                         ball2Area.intersect(ballArea);
