@@ -305,9 +305,12 @@ public class ClientForm extends javax.swing.JFrame {
                             } else if (newMessage.getType().equals(MessageType.LOSE)) {
                                 balls.clear();
                                 paintComponent();
-
+                               
                                 this.interrupt();
                                 socket.close();
+                                
+                                JOptionPane.showMessageDialog(null, "Você perdeu! Reconecte-se para continuar jogando!", "Fim de Jogo!", JOptionPane.ERROR_MESSAGE);
+                                
                                 jButton1.setEnabled(true);
                                 jButton2.setEnabled(false);
                             }
